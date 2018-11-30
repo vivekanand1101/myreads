@@ -9,6 +9,7 @@ class SearchComponenet extends React.Component {
 
   static propTypes = {
     moveBook: PropTypes.func.isRequired,
+    homePageBooks: PropTypes.array.isRequired,
   }
   state = {
     query: '',
@@ -25,19 +26,38 @@ class SearchComponenet extends React.Component {
   searchBooks = (value) => {
     if (value.length === 0) {
       this.setState({
-        query: value,
         books: []
       })
     } else {
       BooksAPI.search(value, 10).then((books) => {
-        if (books.length > 0) {
-          this.setState({
-            query: value,
-            books: books.filter((book) => book.imageLinks !== undefined && book.imageLinks.thumbnail !== undefined),
-          })
-        }
+        this.updateState(books)
       })
     }
+  }
+
+  homePageSyncedBooks = (books) => {
+    let homeBooks = this.props.homePageBooks
+    for (let book of books) {
+      let matched = false;
+      for (let homeBook of homeBooks) {
+        if (homeBook.title === book.title) {
+          matched = true;
+        }
+      }
+      if (matched === false) {
+        book.shelf = 'none'
+      }
+    }
+  }
+
+  updateState = (searchResultBooks) => {
+    if (searchResultBooks.length === 0 | !(Symbol.iterator in Object(searchResultBooks))) {
+      return
+    }
+    this.homePageSyncedBooks(searchResultBooks)
+    this.setState({
+      books: searchResultBooks
+    })
   }
 
   render() {
@@ -74,12 +94,17 @@ class Book extends React.Component {
   }
   render() {
     const book = this.props.book
-    const thumbnail = book.imageLinks.thumbnail
+    let thumbnail = ''
+    try {
+      thumbnail = book.imageLinks.thumbnail
+    } catch (err) {
+      thumbnail = ''
+    }
     return (
       <li>
         <div className="book">
           <div className="book-top">
-            <div className="book-cover" style={{ width: 128, height: 193, backgroundImage: 'url(' + thumbnail + ')'}}></div>
+            <div className="book-cover" style={{ width: 128, height: 193, backgroundImage: `url(${thumbnail})`}}></div>
             <div className="book-shelf-changer">
               <select onChange={(event) => this.moveBook(event, book)} value={book.shelf}>
                 <option value="move" disabled>Move to...</option>
@@ -208,7 +233,7 @@ class BooksApp extends React.Component {
         }
         />
         <Route exact path='/search' render={() =>
-          <SearchComponenet  moveBook={this.moveBook}/>
+          <SearchComponenet  homePageBooks={this.state.books} moveBook={this.moveBook}/>
         }
         />
       </div>

@@ -1,5 +1,9 @@
 # MyReads Project
 
+This project lists the books and categorizes them into currently reading, want to read and read books.
+It also gives a search option through which is backed by udacity's list of books. Functionalities also
+includes moving books between categories, adding a book from the search page and removing the book as well.
+
 ## Main app
 1. clone the project - `git clone https://github.com/vivekanand1101/reactnd-project-myreads-starter`
 2. `cd reactnd-project-myreads-starter`
